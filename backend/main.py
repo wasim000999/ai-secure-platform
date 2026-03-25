@@ -20,11 +20,12 @@ app.add_middleware(
 
 # ── Serve frontend ────────────────────────────────────────────────────────────
 frontend_path = os.path.join(os.path.dirname(__file__), "..", "frontend")
-app.mount("/static", StaticFiles(directory=frontend_path), name="static")
 
 @app.get("/")
 def root():
     return FileResponse(os.path.join(frontend_path, "index.html"))
+
+app.mount("/static", StaticFiles(directory=frontend_path), name="static")
 
 # ── Risk Patterns ─────────────────────────────────────────────────────────────
 PATTERNS = {
@@ -64,7 +65,6 @@ def detect_patterns(content: str, mask: bool = True):
                     continue
                 seen.add(key)
 
-                # Mask: keep first 4 and last 4 chars, replace middle with ***
                 if mask and len(value) > 8:
                     masked = value[:4] + "***" + value[-4:]
                 else:
@@ -113,7 +113,8 @@ async def get_ai_insights(content: str, findings: list, api_key: str):
     if not api_key or not api_key.startswith("sk-"):
         return {
             "summary": "No API key provided. Add your Anthropic API key to enable AI insights.",
-            "insights": ["Provide an Anthropic API key (starts with sk-ant-...) in the input field."]
+            "insights": ["Provide an Anthropic API key (starts with sk-ant-...) in the input field."],
+            "recommendations": []
         }
 
     findings_text = json.dumps(
@@ -153,7 +154,6 @@ Return this exact JSON structure:
             )
         data = response.json()
         text = data["content"][0]["text"].strip()
-        # Strip markdown code fences if present
         text = re.sub(r"^```json\s*|^```\s*|```$", "", text, flags=re.MULTILINE).strip()
         return json.loads(text)
     except Exception as e:
@@ -172,24 +172,19 @@ async def analyze(request: AnalyzeRequest):
 
     mask = request.options.get("mask", True) if request.options else True
 
-    # Detection
     findings = detect_patterns(content, mask=mask)
 
-    # Brute force detection for logs
     if request.input_type in ("log", "text"):
         findings += detect_brute_force(content)
 
-    # Risk score
     risk = calculate_risk(findings)
 
-    # Mask content if requested
     masked_content = content
     if mask:
         for f in findings:
             if f["value"] != f["masked_value"]:
                 masked_content = masked_content.replace(f["value"], f["masked_value"])
 
-    # AI insights
     ai = await get_ai_insights(content, findings, request.api_key or "")
 
     return {
