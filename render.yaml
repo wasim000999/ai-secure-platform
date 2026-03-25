@@ -1,19 +1,30 @@
 services:
   - type: web
-    name: ai-secure-platform
+    name: ai-secure-platform-sisa
     runtime: python
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
-        value: "3.10.0"
+        value: "3.11.0"
+```
+
+Save it (Ctrl+S)
+
+---
+
+## Step 2 — Fix runtime.txt
+
+Open `C:\sisa-project\runtime.txt` and make sure it has **only this one line**:
+```
+python-3.11.0
 ```
 
 ---
 
-## Step 2 — Push to GitHub
+## Step 3 — Push to GitHub
 ```
 cd C:\sisa-project
 git add .
-git commit -m "Add render.yaml for deployment"
+git commit -m "Fix render config files"
 git push
