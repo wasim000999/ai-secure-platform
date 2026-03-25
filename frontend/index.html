@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AI Secure Data Intelligence Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root {
+    --primary: #1a56db;
+    --primary-light: #e8f0fe;
+    --primary-dark: #1240a8;
+    --success: #0b7b3e;
+    --success-light: #e6f4ed;
+    --warning: #b45309;
+    --warning-light: #fef3c7;
+    --danger: #c0392b;
+    --danger-light: #fde8e8;
+    --bg: #f4f6fb;
+    --white: #ffffff;
+    --border: #e2e8f0;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --text-light: #94a3b8;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04);
+    --radius: 12px;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Inter', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; }
+
+  /* NAV */
+  nav {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .nav-brand { display: flex; align-items: center; gap: 10px; }
+  .nav-logo { width: 34px; height: 34px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 16px; }
+  .nav-title { font-size: 15px; font-weight: 700; color: var(--text); }
+  .nav-title span { color: var(--primary); }
+  .nav-badge { background: var(--primary-light); color: var(--primary); font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+
+  /* LAYOUT */
+  .page { max-width: 1000px; margin: 0 auto; padding: 32px 20px 60px; }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, #1a56db 0%, #1a3a8f 100%);
+    border-radius: var(--radius);
+    padding: 36px 40px;
+    color: white;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before { content: ''; position: absolute; top: -40px; right: -40px; width: 200px; height: 200px; background: rgba(255,255,255,0.05); border-radius: 50%; }
+  .hero::after  { content: ''; position: absolute; bottom: -60px; right: 80px; width: 150px; height: 150px; background: rgba(255,255,255,0.04); border-radius: 50%; }
+  .hero-tag { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 4px 12px; font-size: 11px; font-weight: 600; letter-spacing: 0.5px; margin-bottom: 14px; text-transform: uppercase; }
+  .hero h1 { font-size: 26px; font-weight: 700; line-height: 1.3; margin-bottom: 8px; letter-spacing: -0.5px; }
+  .hero p { font-size: 14px; opacity: 0.8; max-width: 500px; line-height: 1.6; }
+  .hero-pills { display: flex; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
+  .hero-pill { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.18); border-radius: 6px; padding: 5px 12px; font-size: 12px; font-weight: 500; }
+
+  /* STATS ROW */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  .stat-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; box-shadow: var(--shadow); display: flex; align-items: center; gap: 12px; }
+  .stat-card-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .stat-card-icon.blue   { background: var(--primary-light); }
+  .stat-card-icon.red    { background: var(--danger-light); }
+  .stat-card-icon.orange { background: #fff7ed; }
+  .stat-card-icon.green  { background: var(--success-light); }
+  .stat-card-num   { font-size: 22px; font-weight: 800; color: var(--text); font-family: var(--mono); }
+  .stat-card-label { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
+  @media(max-width:600px){ .stats-row { grid-template-columns: repeat(2,1fr); } }
+
+  /* CARD */
+  .card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 16px; box-shadow: var(--shadow); }
+  .card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+  .card-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+  .card-icon.blue   { background: var(--primary-light); }
+  .card-icon.green  { background: var(--success-light); }
+  .card-icon.orange { background: var(--warning-light); }
+  .card-icon.red    { background: var(--danger-light); }
+  .card-title    { font-size: 14px; font-weight: 600; color: var(--text); }
+  .card-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+
+  /* INPUTS */
+  .input-field { width: 100%; background: var(--bg); border: 1.5px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-family: var(--mono); font-size: 13px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+  .input-field:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); background: white; }
+  .input-field::placeholder { color: var(--text-light); font-family: var(--sans); }
+  .hint { font-size: 11.5px; color: var(--text-muted); margin-top: 8px; line-height: 1.5; }
+  .hint a { color: var(--primary); text-decoration: none; }
+
+  /* TABS */
+  .tabs { display: flex; gap: 4px; background: var(--bg); padding: 4px; border-radius: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .tab { flex: 1; min-width: 80px; padding: 8px 12px; border: none; border-radius: 6px; font-size: 13px; font-weight: 500; color: var(--text-muted); cursor: pointer; background: transparent; transition: all 0.18s; font-family: var(--sans); white-space: nowrap; }
+  .tab:hover  { color: var(--text); background: rgba(255,255,255,0.7); }
+  .tab.active { background: var(--white); color: var(--primary); font-weight: 600; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+
+  textarea { width: 100%; background: var(--bg); border: 1.5px solid var(--border); border-radius: 8px; padding: 14px; color: var(--text); font-family: var(--mono); font-size: 13px; line-height: 1.7; resize: vertical; min-height: 160px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+  textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); background: white; }
+
+  /* DROPZONE */
+  .dropzone { border: 2px dashed var(--border); border-radius: 10px; padding: 40px 20px; text-align: center; cursor: pointer; transition: all 0.2s; background: var(--bg); }
+  .dropzone:hover, .dropzone.dragover { border-color: var(--primary); background: var(--primary-light); }
+  .dropzone-icon { font-size: 36px; margin-bottom: 10px; }
+  .dropzone-text { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+  .dropzone-text span { color: var(--primary); text-decoration: underline; }
+  .dropzone small { font-size: 12px; color: var(--text-muted); }
+  #fileInput { display: none; }
+  .file-loaded { font-size: 12px; color: var(--success); margin-top: 10px; font-weight: 500; }
+
+  /* OPTIONS */
+  .options-row { display: flex; gap: 20px; margin-top: 14px; flex-wrap: wrap; }
+  .checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted); cursor: pointer; font-weight: 500; }
+  .checkbox-label input { accent-color: var(--primary); width: 15px; height: 15px; }
+
+  /* BUTTONS */
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+  .btn-primary { background: var(--primary); color: white; border: none; border-radius: 8px; padding: 12px 28px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.18s; display: inline-flex; align-items: center; gap: 8px; font-family: var(--sans); }
+  .btn-primary:hover    { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(26,86,219,0.3); }
+  .btn-primary:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; transform: none; box-shadow: none; }
+  .btn-secondary { background: var(--white); color: var(--primary); border: 1.5px solid var(--primary); border-radius: 8px; padding: 12px 24px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.18s; display: inline-flex; align-items: center; gap: 8px; font-family: var(--sans); }
+  .btn-secondary:hover { background: var(--primary-light); transform: translateY(-1px); }
+  .btn-secondary { display: none; }
+  .btn-secondary.show { display: inline-flex; }
+  .btn-success { background: var(--success); color: white; border: none; border-radius: 8px; padding: 12px 24px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.18s; display: none; align-items: center; gap: 8px; font-family: var(--sans); }
+  .btn-success:hover { background: #0a6835; transform: translateY(-1px); }
+  .btn-success.show { display: inline-flex; }
+
+  /* LOADING */
+  .loading { display: none; align-items: center; gap: 10px; margin-top: 14px; font-size: 13px; color: var(--primary); font-weight: 500; }
+  .loading.show { display: flex; }
+  .spinner { width: 18px; height: 18px; border: 2px solid var(--primary-light); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .error-msg { color: var(--danger); font-size: 13px; margin-top: 10px; font-weight: 500; }
+
+  /* RESULTS */
+  #results { display: none; }
+  #results.show { display: block; animation: fadeUp 0.3s ease; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* RISK BANNER */
+  .risk-banner { border-radius: var(--radius); padding: 24px 28px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; border: 1.5px solid; flex-wrap: wrap; gap: 16px; }
+  .risk-banner.safe, .risk-banner.low { background: var(--success-light); border-color: #86efac; }
+  .risk-banner.medium  { background: var(--warning-light); border-color: #fcd34d; }
+  .risk-banner.high    { background: #fff7ed;              border-color: #fdba74; }
+  .risk-banner.critical{ background: var(--danger-light);  border-color: #fca5a5; }
+  .risk-left { display: flex; align-items: center; gap: 16px; }
+  .risk-circle { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 800; flex-shrink: 0; }
+  .safe .risk-circle, .low .risk-circle { background: #dcfce7; color: var(--success); }
+  .medium .risk-circle   { background: #fef9c3; color: var(--warning); }
+  .high .risk-circle     { background: #ffedd5; color: #c2410c; }
+  .critical .risk-circle { background: #fee2e2; color: var(--danger); }
+  .risk-info-label { font-size: 11px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 3px; }
+  .risk-info-level { font-size: 22px; font-weight: 800; }
+  .safe .risk-info-level, .low .risk-info-level { color: var(--success); }
+  .medium .risk-info-level   { color: var(--warning); }
+  .high .risk-info-level     { color: #c2410c; }
+  .critical .risk-info-level { color: var(--danger); }
+  .risk-stats { display: flex; gap: 28px; }
+  .stat { text-align: center; }
+  .stat-num   { font-size: 28px; font-weight: 800; color: var(--text); font-family: var(--mono); }
+  .stat-label { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+
+  /* CHARTS */
+  .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media(max-width:600px){ .charts-grid { grid-template-columns: 1fr; } }
+  .chart-box { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .chart-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 12px; text-align: center; }
+  .chart-container { position: relative; height: 200px; }
+
+  /* AI INSIGHTS */
+  .summary-box { background: linear-gradient(135deg, #f0f7ff, #e8f0fe); border: 1px solid #c7d9f8; border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.6; color: var(--text); margin-bottom: 16px; font-weight: 500; }
+  .insight-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media(max-width:600px){ .insight-grid { grid-template-columns: 1fr; } }
+  .insight-section-title { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 10px; }
+  .insight-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .insight-list li { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; color: var(--text); line-height: 1.5; }
+  .dot { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; margin-top: 1px; font-weight: 700; }
+  .dot.blue  { background: var(--primary-light); color: var(--primary); }
+  .dot.green { background: var(--success-light); color: var(--success); }
+
+  /* FINDINGS */
+  .findings-count { background: var(--primary-light); color: var(--primary); font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+  .findings-list  { display: flex; flex-direction: column; gap: 8px; }
+  .finding-item { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; display: flex; align-items: center; gap: 14px; }
+  .finding-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .finding-dot.critical { background: var(--danger); }
+  .finding-dot.high     { background: #f97316; }
+  .finding-dot.medium   { background: #f59e0b; }
+  .finding-dot.low      { background: #22c55e; }
+  .finding-body  { flex: 1; min-width: 0; }
+  .finding-type  { font-size: 13px; font-weight: 600; color: var(--text); text-transform: capitalize; }
+  .finding-value { font-size: 11px; color: var(--text-muted); font-family: var(--mono); margin-top: 2px; word-break: break-all; }
+  .finding-meta  { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+  .risk-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; }
+  .risk-badge.critical { background: #fee2e2; color: var(--danger); }
+  .risk-badge.high     { background: #ffedd5; color: #c2410c; }
+  .risk-badge.medium   { background: #fef9c3; color: #92400e; }
+  .risk-badge.low      { background: #dcfce7; color: var(--success); }
+  .finding-line { font-size: 11px; color: var(--text-light); font-family: var(--mono); }
+  .no-findings  { text-align: center; padding: 32px; color: var(--success); font-weight: 600; font-size: 15px; }
+
+  /* MASKED */
+  .masked-box { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 14px; font-family: var(--mono); font-size: 12px; line-height: 1.8; color: var(--text); white-space: pre-wrap; word-break: break-all; max-height: 200px; overflow-y: auto; }
+
+  /* SCAN HISTORY */
+  .history-item { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+  .history-time  { font-size: 11px; color: var(--text-muted); font-family: var(--mono); }
+  .history-score { font-size: 12px; font-weight: 700; }
+  .history-score.critical { color: var(--danger); }
+  .history-score.high     { color: #c2410c; }
+  .history-score.medium   { color: var(--warning); }
+  .history-score.low, .history-score.safe { color: var(--success); }
+  .no-history { text-align: center; padding: 20px; color: var(--text-muted); font-size: 13px; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">
+    <div class="nav-logo">🛡️</div>
+    <div class="nav-title">AI Secure <span>Intelligence</span></div>
+  </div>
+  <div class="nav-badge">SISA Hackathon 2026</div>
+</nav>
+
+<div class="page">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-tag">🔒 Security Platform</div>
+    <h1>AI-Powered Secure Data<br/>Intelligence Platform</h1>
+    <p>Scan text, logs, and files for sensitive data leaks. Powered by intelligent pattern detection and AI-generated risk insights.</p>
+    <div class="hero-pills">
+      <span class="hero-pill">🔍 Pattern Detection</span>
+      <span class="hero-pill">🤖 AI Analysis</span>
+      <span class="hero-pill">📋 Log Analyzer</span>
+      <span class="hero-pill">⚡ Risk Engine</span>
+      <span class="hero-pill">📊 Dashboard</span>
+      <span class="hero-pill">📄 PDF Reports</span>
+    </div>
+  </div>
+
+  <!-- LIVE STATS -->
+  <div class="stats-row" id="statsRow">
+    <div class="stat-card">
+      <div class="stat-card-icon blue">🔍</div>
+      <div><div class="stat-card-num" id="totalScans">0</div><div class="stat-card-label">Total Scans</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-icon red">🚨</div>
+      <div><div class="stat-card-num" id="totalCritical">0</div><div class="stat-card-label">Critical Found</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-icon orange">⚠️</div>
+      <div><div class="stat-card-num" id="totalHigh">0</div><div class="stat-card-label">High Risk</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-icon green">✅</div>
+      <div><div class="stat-card-num" id="totalClean">0</div><div class="stat-card-label">Clean Scans</div></div>
+    </div>
+  </div>
+
+  <!-- API KEY -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon blue">🔑</div>
+      <div>
+        <div class="card-title">Anthropic API Key</div>
+        <div class="card-subtitle">Optional — enables AI-powered insights and recommendations</div>
+      </div>
+    </div>
+    <input class="input-field" type="password" id="apiKey" placeholder="sk-ant-api03-..."/>
+    <p class="hint">Get a free key at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> · Your key is never stored.</p>
+  </div>
+
+  <!-- INPUT -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon blue">📝</div>
+      <div>
+        <div class="card-title">Input Data</div>
+        <div class="card-subtitle">Choose your input type and paste or upload content to scan</div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="setTab('text',this)">📄 Text</button>
+      <button class="tab" onclick="setTab('log',this)">📋 Log File</button>
+      <button class="tab" onclick="setTab('sql',this)">🗄️ SQL</button>
+      <button class="tab" onclick="setTab('chat',this)">💬 Chat</button>
+      <button class="tab" onclick="setTab('file',this)">📁 Upload File</button>
+    </div>
+
+    <div id="textInput">
+      <textarea id="contentBox" placeholder="Paste your content here to scan for sensitive data...&#10;&#10;Example:&#10;email=admin@company.com&#10;password=admin123&#10;api_key=sk-prod-xyz-abc123456789"></textarea>
+    </div>
+
+    <div id="fileInput-area" style="display:none;">
+      <div class="dropzone" id="dropzone"
+           onclick="document.getElementById('fileInput').click()"
+           ondragover="event.preventDefault();this.classList.add('dragover')"
+           ondragleave="this.classList.remove('dragover')"
+           ondrop="handleDrop(event)">
+        <div class="dropzone-icon">📂</div>
+        <div class="dropzone-text">Drop your file here or <span>browse to upload</span></div>
+        <small>Supports .txt · .log · .pdf · .docx</small>
+      </div>
+      <input type="file" id="fileInput" accept=".txt,.log,.pdf,.docx" onchange="handleFile(this.files[0])"/>
+      <div class="file-loaded" id="fileLoaded"></div>
+    </div>
+
+    <div class="options-row">
+      <label class="checkbox-label"><input type="checkbox" id="maskOption" checked/> Mask sensitive values in output</label>
+      <label class="checkbox-label"><input type="checkbox" id="blockHighRisk"/> Highlight critical findings</label>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-primary" id="analyzeBtn" onclick="analyze()">🔍 Analyze Now</button>
+      <button class="btn-secondary" id="downloadBtn" onclick="downloadPDF()">📄 Download PDF Report</button>
+      <button class="btn-success"   id="clearBtn"    onclick="clearResults()">🗑️ Clear</button>
+    </div>
+    <div class="loading" id="loading"><div class="spinner"></div>Scanning content for security risks...</div>
+    <div class="error-msg" id="errorMsg"></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results">
+
+    <!-- RISK BANNER -->
+    <div class="risk-banner" id="riskBanner">
+      <div class="risk-left">
+        <div class="risk-circle" id="riskEmoji">✓</div>
+        <div>
+          <div class="risk-info-label">Overall Risk Level</div>
+          <div class="risk-info-level" id="riskLevel">SAFE</div>
+        </div>
+      </div>
+      <div class="risk-stats">
+        <div class="stat"><div class="stat-num" id="riskScore">0</div><div class="stat-label">Risk Score /10</div></div>
+        <div class="stat"><div class="stat-num" id="totalFindings">0</div><div class="stat-label">Findings</div></div>
+      </div>
+    </div>
+
+    <!-- CHARTS DASHBOARD -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon blue">📊</div>
+        <div>
+          <div class="card-title">Risk Dashboard</div>
+          <div class="card-subtitle">Visual breakdown of detected security issues</div>
+        </div>
+      </div>
+      <div class="charts-grid">
+        <div class="chart-box">
+          <div class="chart-title">Risk Level Breakdown</div>
+          <div class="chart-container"><canvas id="pieChart"></canvas></div>
+        </div>
+        <div class="chart-box">
+          <div class="chart-title">Finding Types</div>
+          <div class="chart-container"><canvas id="barChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI INSIGHTS -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon blue">🤖</div>
+        <div>
+          <div class="card-title">AI Security Analysis</div>
+          <div class="card-subtitle">Powered by Claude (Anthropic)</div>
+        </div>
+      </div>
+      <div class="summary-box" id="aiSummary">Analyzing...</div>
+      <div class="insight-grid">
+        <div>
+          <div class="insight-section-title">🔍 Key Insights</div>
+          <ul class="insight-list" id="aiInsights"></ul>
+        </div>
+        <div>
+          <div class="insight-section-title">✅ Recommendations</div>
+          <ul class="insight-list" id="aiRecs"></ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- FINDINGS -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon orange">⚠️</div>
+        <div style="flex:1;">
+          <div class="card-title">Detected Findings</div>
+          <div class="card-subtitle">All sensitive patterns found in your content</div>
+        </div>
+        <div class="findings-count" id="findingsCount">0 found</div>
+      </div>
+      <div class="findings-list" id="findingsList"></div>
+    </div>
+
+    <!-- MASKED CONTENT -->
+    <div class="card" id="maskedCard" style="display:none;">
+      <div class="card-header">
+        <div class="card-icon green">🔒</div>
+        <div>
+          <div class="card-title">Masked Output</div>
+          <div class="card-subtitle">Your content with all sensitive data hidden</div>
+        </div>
+      </div>
+      <div class="masked-box" id="maskedContent"></div>
+    </div>
+
+    <!-- SCAN HISTORY -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon red">🕐</div>
+        <div>
+          <div class="card-title">Scan History</div>
+          <div class="card-subtitle">Your recent scans this session</div>
+        </div>
+      </div>
+      <div id="historyList"><div class="no-history">No scans yet. Run your first scan above!</div></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  let currentTab = 'text';
+  let uploadedContent = '';
+  let lastResult = null;
+  let pieChartInstance = null;
+  let barChartInstance = null;
+  let scanHistory = [];
+  let sessionStats = { scans: 0, critical: 0, high: 0, clean: 0 };
+
+  // ── Tab switching ──────────────────────────────────────────────────────────
+  function setTab(tab, el) {
+    currentTab = tab;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('textInput').style.display = tab === 'file' ? 'none' : 'block';
+    document.getElementById('fileInput-area').style.display = tab === 'file' ? 'block' : 'none';
+    const ph = {
+      text: 'Paste any text content to scan for sensitive data...',
+      log:  'Paste log file content here...\n\nExample:\n2026-03-25 10:00:01 INFO email=admin@company.com\npassword=secret123\nFailed login attempt from 192.168.1.1',
+      sql:  'Paste SQL queries to scan...\n\nExample:\nSELECT * FROM users WHERE password = "admin123";',
+      chat: 'Paste chat messages or conversation logs here...'
+    };
+    const box = document.getElementById('contentBox');
+    if (box && ph[tab]) box.placeholder = ph[tab];
+  }
+
+  // ── File upload ────────────────────────────────────────────────────────────
+  async function handleFile(file) {
+    if (!file) return;
+    document.getElementById('fileLoaded').innerHTML = `⏳ Loading ${file.name}...`;
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const res = await fetch('/upload', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (data.error) {
+        document.getElementById('fileLoaded').innerHTML = '❌ ' + data.error;
+      } else {
+        uploadedContent = data.content;
+        document.getElementById('fileLoaded').innerHTML = `✅ Loaded: <strong>${data.filename}</strong> (${data.content.length} characters)`;
+      }
+    } catch(e) {
+      document.getElementById('fileLoaded').innerHTML = '❌ Upload failed. Is the server running?';
+    }
+  }
+
+  function handleDrop(e) {
+    e.preventDefault();
+    document.getElementById('dropzone').classList.remove('dragover');
+    handleFile(e.dataTransfer.files[0]);
+  }
+
+  // ── Analyze ────────────────────────────────────────────────────────────────
+  async function analyze() {
+    const apiKey = document.getElementById('apiKey').value.trim();
+    const mask   = document.getElementById('maskOption').checked;
+    let content  = currentTab === 'file' ? uploadedContent : document.getElementById('contentBox').value.trim();
+
+    if (!content) {
+      document.getElementById('errorMsg').textContent = currentTab === 'file'
+        ? '⚠️ Please upload a file first.' : '⚠️ Please enter some content to analyze.';
+      return;
+    }
+    document.getElementById('errorMsg').textContent = '';
+
+    const btn = document.getElementById('analyzeBtn');
+    btn.disabled = true;
+    document.getElementById('loading').classList.add('show');
+    document.getElementById('results').classList.remove('show');
+    document.getElementById('downloadBtn').classList.remove('show');
+    document.getElementById('clearBtn').classList.remove('show');
+
+    try {
+      const res = await fetch('/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          input_type: currentTab,
+          content,
+          api_key: apiKey,
+          options: { mask, block_high_risk: document.getElementById('blockHighRisk').checked }
+        })
+      });
+      const data = await res.json();
+      if (data.error) { document.getElementById('errorMsg').textContent = '❌ ' + data.error; return; }
+
+      lastResult = data;
+      renderResults(data, mask);
+      updateSessionStats(data);
+      addToHistory(data);
+
+      document.getElementById('downloadBtn').classList.add('show');
+      document.getElementById('clearBtn').classList.add('show');
+    } catch(e) {
+      document.getElementById('errorMsg').textContent = '❌ Could not reach server. Make sure uvicorn is running.';
+    } finally {
+      btn.disabled = false;
+      document.getElementById('loading').classList.remove('show');
+    }
+  }
+
+  // ── Render results ─────────────────────────────────────────────────────────
+  function renderResults(data, mask) {
+    const level  = data.risk_level || 'safe';
+    const emojis = { safe: '✓', low: '✓', medium: '⚠', high: '!', critical: '✕' };
+
+    // Risk banner
+    document.getElementById('riskBanner').className = 'risk-banner ' + level;
+    document.getElementById('riskEmoji').textContent  = emojis[level] || '?';
+    document.getElementById('riskLevel').textContent  = level.toUpperCase();
+    document.getElementById('riskScore').textContent  = data.risk_score + '/10';
+    document.getElementById('totalFindings').textContent = data.total_findings;
+    document.getElementById('findingsCount').textContent = data.total_findings + ' found';
+
+    // AI
+    document.getElementById('aiSummary').textContent = data.summary || 'No summary available.';
+    document.getElementById('aiInsights').innerHTML  = (data.insights||[]).map(i=>`<li><span class="dot blue">›</span>${i}</li>`).join('');
+    document.getElementById('aiRecs').innerHTML      = (data.recommendations||[]).map(r=>`<li><span class="dot green">✓</span>${r}</li>`).join('');
+
+    // Findings list
+    const fl = document.getElementById('findingsList');
+    if (!data.findings || data.findings.length === 0) {
+      fl.innerHTML = '<div class="no-findings">✅ No sensitive data detected. Your content looks clean!</div>';
+    } else {
+      fl.innerHTML = data.findings.map(f => `
+        <div class="finding-item">
+          <div class="finding-dot ${f.risk}"></div>
+          <div class="finding-body">
+            <div class="finding-type">${f.type.replace(/_/g,' ')}</div>
+            <div class="finding-value">${mask ? f.masked_value : f.value}</div>
+          </div>
+          <div class="finding-meta">
+            <span class="risk-badge ${f.risk}">${f.risk}</span>
+            ${f.line ? `<span class="finding-line">line ${f.line}</span>` : ''}
+          </div>
+        </div>`).join('');
+    }
+
+    // Masked content
+    if (mask && data.masked_content) {
+      document.getElementById('maskedCard').style.display = 'block';
+      document.getElementById('maskedContent').textContent = data.masked_content;
+    } else {
+      document.getElementById('maskedCard').style.display = 'none';
+    }
+
+    // Charts
+    renderCharts(data.findings || []);
+
+    document.getElementById('results').classList.add('show');
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  // ── Charts ─────────────────────────────────────────────────────────────────
+  function renderCharts(findings) {
+    const counts = { critical: 0, high: 0, medium: 0, low: 0 };
+    const types  = {};
+    findings.forEach(f => {
+      counts[f.risk] = (counts[f.risk] || 0) + 1;
+      const t = f.type.replace(/_/g,' ');
+      types[t] = (types[t] || 0) + 1;
+    });
+
+    // Pie chart
+    if (pieChartInstance) pieChartInstance.destroy();
+    pieChartInstance = new Chart(document.getElementById('pieChart'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Critical', 'High', 'Medium', 'Low'],
+        datasets: [{
+          data: [counts.critical, counts.high, counts.medium, counts.low],
+          backgroundColor: ['#fee2e2','#ffedd5','#fef9c3','#dcfce7'],
+          borderColor:     ['#c0392b','#c2410c','#92400e','#0b7b3e'],
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 10 } } }
+      }
+    });
+
+    // Bar chart
+    if (barChartInstance) barChartInstance.destroy();
+    const typeLabels = Object.keys(types).slice(0, 6);
+    const typeValues = typeLabels.map(k => types[k]);
+    barChartInstance = new Chart(document.getElementById('barChart'), {
+      type: 'bar',
+      data: {
+        labels: typeLabels,
+        datasets: [{
+          label: 'Count',
+          data: typeValues,
+          backgroundColor: '#e8f0fe',
+          borderColor: '#1a56db',
+          borderWidth: 2,
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } } },
+          x: { ticks: { font: { size: 10 } } }
+        }
+      }
+    });
+  }
+
+  // ── Session stats ──────────────────────────────────────────────────────────
+  function updateSessionStats(data) {
+    sessionStats.scans++;
+    const findings = data.findings || [];
+    const hasCritical = findings.some(f => f.risk === 'critical');
+    const hasHigh     = findings.some(f => f.risk === 'high');
+    if (hasCritical) sessionStats.critical++;
+    if (hasHigh)     sessionStats.high++;
+    if (findings.length === 0) sessionStats.clean++;
+
+    document.getElementById('totalScans').textContent    = sessionStats.scans;
+    document.getElementById('totalCritical').textContent = sessionStats.critical;
+    document.getElementById('totalHigh').textContent     = sessionStats.high;
+    document.getElementById('totalClean').textContent    = sessionStats.clean;
+  }
+
+  // ── Scan history ───────────────────────────────────────────────────────────
+  function addToHistory(data) {
+    const now = new Date().toLocaleTimeString();
+    scanHistory.unshift({ time: now, score: data.risk_score, level: data.risk_level, findings: data.total_findings, type: currentTab });
+    if (scanHistory.length > 5) scanHistory.pop();
+
+    const hl = document.getElementById('historyList');
+    hl.innerHTML = scanHistory.map(h => `
+      <div class="history-item">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--text)">${h.type.toUpperCase()} scan</div>
+          <div class="history-time">${h.time}</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="history-score ${h.level}">${h.level.toUpperCase()} — ${h.score}/10</div>
+          <div style="font-size:11px;color:var(--text-muted)">${h.findings} findings</div>
+        </div>
+      </div>`).join('');
+  }
+
+  // ── Download PDF ───────────────────────────────────────────────────────────
+  function downloadPDF() {
+    if (!lastResult) return;
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const blue  = [26,86,219];
+    const dark  = [30,41,59];
+    const gray  = [100,116,139];
+    const red   = [192,57,43];
+    const orange= [194,65,12];
+    const amber = [146,64,14];
+    const green = [11,123,62];
+
+    const riskColor = { critical: red, high: orange, medium: amber, low: green, safe: green };
+    const level = lastResult.risk_level || 'safe';
+
+    // Header
+    doc.setFillColor(...blue);
+    doc.rect(0, 0, 210, 40, 'F');
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(18); doc.setFont('helvetica','bold');
+    doc.text('AI Secure Data Intelligence Platform', 14, 16);
+    doc.setFontSize(10); doc.setFont('helvetica','normal');
+    doc.text('Security Scan Report  |  SISA Hackathon 2026', 14, 24);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 32);
+
+    let y = 50;
+
+    // Risk summary box
+    doc.setFillColor(240,247,255);
+    doc.roundedRect(14, y, 182, 28, 4, 4, 'F');
+    doc.setTextColor(...riskColor[level]);
+    doc.setFontSize(14); doc.setFont('helvetica','bold');
+    doc.text(`Risk Level: ${level.toUpperCase()}`, 20, y+10);
+    doc.setTextColor(...dark);
+    doc.setFontSize(10); doc.setFont('helvetica','normal');
+    doc.text(`Risk Score: ${lastResult.risk_score}/10`, 20, y+20);
+    doc.text(`Total Findings: ${lastResult.total_findings}`, 80, y+20);
+    doc.text(`Input Type: ${currentTab.toUpperCase()}`, 140, y+20);
+    y += 36;
+
+    // AI Summary
+    if (lastResult.summary) {
+      doc.setTextColor(...blue);
+      doc.setFontSize(12); doc.setFont('helvetica','bold');
+      doc.text('AI Analysis Summary', 14, y); y += 7;
+      doc.setTextColor(...dark);
+      doc.setFontSize(10); doc.setFont('helvetica','normal');
+      const lines = doc.splitTextToSize(lastResult.summary, 182);
+      doc.text(lines, 14, y); y += lines.length * 6 + 6;
+    }
+
+    // Findings
+    doc.setTextColor(...blue);
+    doc.setFontSize(12); doc.setFont('helvetica','bold');
+    doc.text('Detected Findings', 14, y); y += 8;
+
+    if (!lastResult.findings || lastResult.findings.length === 0) {
+      doc.setTextColor(...green);
+      doc.setFontSize(10); doc.setFont('helvetica','normal');
+      doc.text('✓ No sensitive data detected.', 14, y); y += 8;
+    } else {
+      lastResult.findings.forEach((f, i) => {
+        if (y > 270) { doc.addPage(); y = 20; }
+        const rc = riskColor[f.risk] || dark;
+        doc.setFillColor(245,247,251);
+        doc.roundedRect(14, y-4, 182, 14, 2, 2, 'F');
+        doc.setTextColor(...rc);
+        doc.setFontSize(9); doc.setFont('helvetica','bold');
+        doc.text(`[${f.risk.toUpperCase()}]`, 18, y+4);
+        doc.setTextColor(...dark); doc.setFont('helvetica','normal');
+        doc.text(f.type.replace(/_/g,' ').toUpperCase(), 48, y+4);
+        doc.setTextColor(...gray);
+        doc.text(f.masked_value || f.value, 100, y+4);
+        if (f.line) doc.text(`Line ${f.line}`, 175, y+4);
+        y += 16;
+      });
+    }
+
+    y += 4;
+
+    // Insights
+    if (lastResult.insights && lastResult.insights.length > 0) {
+      if (y > 250) { doc.addPage(); y = 20; }
+      doc.setTextColor(...blue);
+      doc.setFontSize(12); doc.setFont('helvetica','bold');
+      doc.text('Key Insights', 14, y); y += 8;
+      doc.setTextColor(...dark); doc.setFontSize(10); doc.setFont('helvetica','normal');
+      lastResult.insights.forEach(ins => {
+        if (y > 270) { doc.addPage(); y = 20; }
+        const lines = doc.splitTextToSize(`• ${ins}`, 178);
+        doc.text(lines, 18, y); y += lines.length * 6 + 2;
+      });
+      y += 4;
+    }
+
+    // Recommendations
+    if (lastResult.recommendations && lastResult.recommendations.length > 0) {
+      if (y > 250) { doc.addPage(); y = 20; }
+      doc.setTextColor(...blue);
+      doc.setFontSize(12); doc.setFont('helvetica','bold');
+      doc.text('Recommendations', 14, y); y += 8;
+      doc.setTextColor(...dark); doc.setFontSize(10); doc.setFont('helvetica','normal');
+      lastResult.recommendations.forEach(rec => {
+        if (y > 270) { doc.addPage(); y = 20; }
+        const lines = doc.splitTextToSize(`✓ ${rec}`, 178);
+        doc.text(lines, 18, y); y += lines.length * 6 + 2;
+      });
+    }
+
+    // Footer
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFillColor(245,247,251);
+      doc.rect(0, 285, 210, 12, 'F');
+      doc.setTextColor(...gray);
+      doc.setFontSize(8); doc.setFont('helvetica','normal');
+      doc.text('AI Secure Data Intelligence Platform — SISA Hackathon 2026', 14, 292);
+      doc.text(`Page ${i} of ${pageCount}`, 185, 292);
+    }
+
+    doc.save(`security-report-${new Date().toISOString().slice(0,10)}.pdf`);
+  }
+
+  // ── Clear ──────────────────────────────────────────────────────────────────
+  function clearResults() {
+    document.getElementById('results').classList.remove('show');
+    document.getElementById('contentBox').value = '';
+    document.getElementById('downloadBtn').classList.remove('show');
+    document.getElementById('clearBtn').classList.remove('show');
+    lastResult = null;
+  }
+</script>
+</body>
+</html>
